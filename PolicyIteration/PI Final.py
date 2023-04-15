@@ -50,9 +50,9 @@ print()
 
 
 # Hyperparams
-DISCOUNT = 0.95
+DISCOUNT = 0.9
 THETA = 0.01
-P = 0.0
+P = 0.02
 
 # State Params
 NUM_ACTIONS = 4
@@ -80,9 +80,9 @@ for state in states:
 
         nx, ny = state[0]+ACTIONS_MAP[action][0], state[1]+ACTIONS_MAP[action][1]
         if nx < 0 or nx >= NUM_ROW or ny < 0 or ny >= NUM_COL or encoded_map[nx][ny] == 1:
-            a1 = [1 - P, state, MOVE_COST, state == END_STATE]
+            a1 = [1 - P, state, MOVE_COST + rewards[state], state == END_STATE]
         else:
-            a1 = [1 - P, (nx, ny), MOVE_COST, (nx, ny) == END_STATE]
+            a1 = [1 - P, (nx, ny), MOVE_COST + rewards[(nx, ny)], (nx, ny) == END_STATE]
 
         probs.append(a1)
         acts.remove(action)
@@ -90,9 +90,9 @@ for state in states:
         for rem_acts in acts:
             nx, ny = state[0] + ACTIONS_MAP[rem_acts][0], state[1] + ACTIONS_MAP[rem_acts][1]
             if nx < 0 or nx >= NUM_ROW or ny < 0 or ny >= NUM_COL or encoded_map[nx][ny] == 1:
-                a1 = [P / 3, state, MOVE_COST, state == END_STATE]
+                a1 = [P / 3, state, MOVE_COST + rewards[state], state == END_STATE]
             else:
-                a1 = [P / 3, (nx, ny), MOVE_COST, (nx, ny) == END_STATE]
+                a1 = [P / 3, (nx, ny), MOVE_COST + rewards[(nx, ny)], (nx, ny) == END_STATE]
             probs.append(a1)
 
         transition_probs[(state, action)] = probs
@@ -147,11 +147,9 @@ def policy_eval_fn(policy, graph):
             # print()
 
             # How much our value function changed (across any states)
-            if encoded_map[s[0]][s[1]] in [1, 5]:
+            if encoded_map[s[0]][s[1]] in [1]:
                 if encoded_map[s[0]][s[1]] == 1:
                     V[s[0]][s[1]] = "WALL"
-                if encoded_map[s[0]][s[1]] == 5:
-                    V[s[0]][s[1]] = 200
                 delta = max(delta, 0)
             else:
                 delta = max(delta, np.abs(v - V[s[0]][s[1]]))
